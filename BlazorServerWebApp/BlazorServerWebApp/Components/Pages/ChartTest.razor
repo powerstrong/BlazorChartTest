@@ -1,33 +1,55 @@
-﻿@page "/charttest"
+﻿@page "/ChartTest"
 @rendermode InteractiveServer
-
 @inject IJSRuntime JS
 
-<h3>실시간 로봇 데이터</h3>
-<div id="chart"></div>
+<PageTitle>Blazor chart test</PageTitle>
+
+<h3>실시간 차트 테스트</h3>
+
+<!-- 차트 컨테이너 -->
+<div class="chart-container">
+    <div class="chart" id="chart1"></div>
+    <div class="chart" id="chart2"></div>
+    <div class="chart" id="chart3"></div>
+    <div class="chart" id="chart4"></div>
+</div>
 
 @code {
     private IJSObjectReference? _jsModule;
     private Timer? _timer;
     private int _tick = 0;
+    private string[] _strokeColor = { "red", "blue", "green", "orange" };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            Console.WriteLine("🔥 OnAfterRenderAsync 호출됨");
             _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/chartInterop.js");
-            await _jsModule.InvokeVoidAsync("chartInterop.initChart");
+
+            for (int i = 1; i <= 4; i++)
+            {
+                await _jsModule.InvokeVoidAsync("chartInterop.initChart", $"chart{i}", _strokeColor[i-1]);
+            }
 
             _timer = new Timer(async _ =>
             {
-                double x = _tick * 0.01; // 시간
-                double y = Math.Sin(x * 2 * Math.PI); // 예시: 사인파
+                double x = _tick * 0.01;
+                double[] values = new double[]
+                {
+                    Math.Sin(x * 2 * Math.PI),
+                    Math.Cos(x * 2 * Math.PI),
+                    Math.Sin(x),
+                    Math.Cos(x)
+                };
+
                 _tick++;
 
-                if (_jsModule != null)
-                    await _jsModule.InvokeVoidAsync("chartInterop.addPoint", x, y);
-            }, null, 0, 10); // 10ms 간격
+                for (int i = 0; i < 4; i++)
+                {
+                    if (_jsModule != null)
+                        await _jsModule.InvokeVoidAsync("chartInterop.addPoint", $"chart{i + 1}", x, values[i]);
+                }
+            }, null, 0, 10);
         }
     }
 
@@ -36,3 +58,20 @@
         _timer?.Dispose();
     }
 }
+
+<style>
+    /* 차트를 2x2로 배치하기 위한 CSS Grid */
+    .chart-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2개의 열로 나누기 */
+        gap: 20px; /* 차트 간의 간격 */
+        padding: 20px; /* 차트 컨테이너 여백 */
+    }
+
+    .chart {
+        height: 300px; /* 차트의 높이 */
+        background-color: #f0f0f0; /* 차트 배경색 */
+        border: 1px solid #ccc; /* 차트 테두리 */
+    }
+</style>
+
