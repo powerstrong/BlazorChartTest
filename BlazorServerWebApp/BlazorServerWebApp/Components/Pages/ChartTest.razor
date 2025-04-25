@@ -1,9 +1,38 @@
-﻿@page "/ChartTest"
+﻿@page "/charttest"
+@rendermode InteractiveServer
 
-<PageTitle>차트 테스트해봅시다</PageTitle>
+@inject IJSRuntime JS
 
-<h1>ChartTest</h1>
+<h3>실시간 로봇 데이터</h3>
+<div id="chart"></div>
 
 @code {
+    private IJSObjectReference? _jsModule;
+    private Timer? _timer;
+    private int _tick = 0;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine("🔥 OnAfterRenderAsync 호출됨");
+            _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/chartInterop.js");
+            await _jsModule.InvokeVoidAsync("chartInterop.initChart");
+
+            _timer = new Timer(async _ =>
+            {
+                double x = _tick * 0.01; // 시간
+                double y = Math.Sin(x * 2 * Math.PI); // 예시: 사인파
+                _tick++;
+
+                if (_jsModule != null)
+                    await _jsModule.InvokeVoidAsync("chartInterop.addPoint", x, y);
+            }, null, 0, 10); // 10ms 간격
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
 }
