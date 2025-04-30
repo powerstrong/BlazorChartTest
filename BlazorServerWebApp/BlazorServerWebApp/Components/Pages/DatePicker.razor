@@ -1,0 +1,42 @@
+﻿@page "/datepicker"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<PageTitle>Mudblazor datepicker</PageTitle>
+<MudText Typo="Typo.h3" Align="Align.Left" Class="mb-4">
+    MudBlazor DatePicker
+</MudText>
+
+<MudStack>
+    <MudDateRangePicker @ref="_picker" Label="Select date range" @bind-DateRange="_dateRange" 
+                        PickerVariant="PickerVariant.Dialog" Class="custom-picker">
+        <PickerActions>
+            <MudButton Class="mr-auto align-self-start" OnClick="@(() => _picker.ClearAsync())">Clear</MudButton>
+            <MudButton OnClick="@(() => _picker.CloseAsync(false))">Cancel</MudButton>
+            <MudButton Color="Color.Primary" OnClick="@(() => _picker.CloseAsync())">Ok</MudButton>
+            <MudText>이 부분에 뭔가 정보를...</MudText>
+        </PickerActions>
+    </MudDateRangePicker>
+
+    <MudText Typo="Typo.body1" Class="mt-2">
+        선택된 날짜:
+        @(
+            _dateRange?.Start.HasValue == true && _dateRange?.End.HasValue == true
+            ? $"{_dateRange.Start.Value:yyyy-MM-dd} ~ {_dateRange.End.Value:yyyy-MM-dd}"
+            : "날짜를 선택해주세요"
+            )
+    </MudText>
+</MudStack>
+
+@code {
+    private MudDateRangePicker? _picker;
+    private DateRange _dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
+}
+
+
+<style>
+    .custom-picker {
+        max-width: 500px ;
+        width: 100% ;
+    }
+</style>
