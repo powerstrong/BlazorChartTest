@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-<MudThemeProvider />
+<MudThemeProvider @ref="_themeProvider" />
 <MudPopoverProvider />
 
 <div class="page">
@@ -10,6 +10,7 @@
     <main>
         <div class="top-row px-4">
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" Color="Color.Inherit" OnClick="ToggleDarkMode" class="ms-2" />
         </div>
 
         <article class="content px-4">
@@ -30,3 +31,16 @@
     <script src="https://cdn.jsdelivr.net/npm/uplot@1.6.26/dist/uPlot.iife.min.js"></script>
     <script src="js/chartInterop.js"></script> 
 </HeadContent>
+@code {
+    private MudThemeProvider? _themeProvider;
+    private bool _isDarkMode = false;
+
+    private async Task ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+        if (_themeProvider is not null)
+        {
+            await _themeProvider.ToggleDarkMode();
+        }
+    }
+}
